@@ -160,7 +160,10 @@ fun AuthScreen(onNavigateToHome: () -> Unit = {}) {
             "LinkForge",
             fontSize = titleFontSize,
             fontWeight = FontWeight.ExtraBold,
-            color = Color.White
+            color = Color.White,
+            modifier = Modifier.clickable {
+                onNavigateToHome() // This triggers the redirect
+            }
         )
         Spacer(Modifier.height(16.dp))
 

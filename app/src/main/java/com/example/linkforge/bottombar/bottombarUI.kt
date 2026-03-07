@@ -26,7 +26,7 @@ fun MyBottomBar(navController: NavController) {
 
     NavigationBar(
         modifier = Modifier.fillMaxWidth(),
-        containerColor = Color(0xFFE8E9EB),
+        containerColor = Color(0xFFF8F9FA),
         tonalElevation = 0.dp
     ) {
         items.forEach { screen ->

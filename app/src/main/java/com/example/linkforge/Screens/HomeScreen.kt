@@ -20,11 +20,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,10 +37,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.height
 import com.example.linkforge.R
 import com.example.linkforge.data.ExpenseAndIncome
 import com.example.linkforge.data.UserPreferences
@@ -155,15 +159,54 @@ fun HomeScreen() {
 }
 private val JourneyPillShape = RoundedCornerShape(percent = 25)
 
-private data class JourneyItem(val label: String, val amount: Double, val iconResId: Int, val isPrimary: Boolean)
+// Tonal colors for immediate context: Income, Expense, Lend, Borrow
+// Professional Deep Tones for Dark Mode
+private val JourneyIncomeColor = Color(0xFFFFFFFF)   // Deep Emerald Green
+private val JourneyExpenseColor = Color(0xFFFFFFFF)  // Deep Burnt Orange
+private val JourneyLendColor = Color(0xFFFFFFFF)     // Deep Royal Purple
+private val JourneyBorrowColor = Color(0xFFFFFFFF)   // Deep Amber/Gold
+private val JourneyTextOnLight = Color(0xFF000000)
+private val JourneyTextOnDark = Color.Black
+
+private data class JourneyItem(
+    val label: String,
+    val amount: Double,
+    val iconResId: Int,
+    val backgroundColor: Color,
+    val textColor: Color
+)
 
 @Composable
 fun JourneyLazyRow(expenseAndIncome: ExpenseAndIncome) {
     val items = listOf(
-        JourneyItem("Income", expenseAndIncome.income, R.drawable.income, isPrimary = true),
-        JourneyItem("Expense", expenseAndIncome.expense, R.drawable.expenses, isPrimary = false),
-        JourneyItem("Lend", expenseAndIncome.lend, R.drawable.lend, isPrimary = false),
-        JourneyItem("Borrow", expenseAndIncome.borrow, R.drawable.borrow, isPrimary = false)
+        JourneyItem(
+            "Income",
+            expenseAndIncome.income,
+            R.drawable.income,
+            JourneyIncomeColor,
+            JourneyTextOnLight
+        ),
+        JourneyItem(
+            "Expense",
+            expenseAndIncome.expense,
+            R.drawable.expenses,
+            JourneyExpenseColor,
+            JourneyTextOnLight
+        ),
+        JourneyItem(
+            "Lend",
+            expenseAndIncome.lend,
+            R.drawable.lend,
+            JourneyLendColor,
+            JourneyTextOnLight
+        ),
+        JourneyItem(
+            "Borrow",
+            expenseAndIncome.borrow,
+            R.drawable.borrow,
+            JourneyBorrowColor,
+            JourneyTextOnLight
+        )
     )
     LazyRow(
         modifier = Modifier
@@ -176,8 +219,8 @@ fun JourneyLazyRow(expenseAndIncome: ExpenseAndIncome) {
             Surface(
                 modifier = Modifier.width(160.dp),
                 shape = JourneyPillShape,
-                color = if (item.isPrimary) Color(0xFF0345FC) else Color.White,
-                shadowElevation = if (item.isPrimary) 0.dp else 1.dp,
+                color = item.backgroundColor,
+                shadowElevation = 1.dp,
                 tonalElevation = 0.dp
             ) {
                 Row(
@@ -196,14 +239,14 @@ fun JourneyLazyRow(expenseAndIncome: ExpenseAndIncome) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = item.label,
-                            color = if (item.isPrimary) Color.White else Color.Black,
+                            color = item.textColor,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
                     Text(
                         text = formatMoney(item.amount),
-                        color = if (item.isPrimary) Color.White else Color.Black,
+                        color = item.textColor,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -331,52 +374,138 @@ fun UserCardSection(
     var isAdding by remember { mutableStateOf(false) }
 
     if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("New Wallet") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Dialog(onDismissRequest = { showDialog = false }) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.95f)
+                    .padding(horizontal = 10.dp),
+                shape = RoundedCornerShape(24.dp),
+                color = Color.White,
+                shadowElevation = 4.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.walletaddon),
+                            contentDescription = null,
+                            modifier = Modifier.size(56.dp)
+                        )
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = "New Wallet",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        color = Color(0xFF1A1A1A)
+                    )
+                    Spacer(Modifier.height(20.dp))
+                    val textFieldShape = RoundedCornerShape(12.dp)
+                    val textFieldColors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF0345FC),
+                        unfocusedBorderColor = Color(0xFFE0E0E0),
+                        focusedContainerColor = Color(0xFFFAFAFA),
+                        unfocusedContainerColor = Color(0xFFFAFAFA),
+                        cursorColor = Color(0xFF0345FC),
+                        focusedLabelColor = Color(0xFF0345FC),
+                        unfocusedLabelColor = Color(0xFF757575),
+                        focusedTextColor = Color(0xFF1A1A1A),
+                        unfocusedTextColor = Color(0xFF1A1A1A)
+                    )
                     OutlinedTextField(
                         value = walletName,
                         onValueChange = { walletName = it },
                         label = { Text("Wallet name") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = textFieldShape,
+                        colors = textFieldColors
                     )
+                    Spacer(Modifier.height(12.dp))
                     OutlinedTextField(
                         value = walletAmountStr,
                         onValueChange = { walletAmountStr = it.filter { c -> c.isDigit() || c == '.' } },
                         label = { Text("Amount (₹)") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = textFieldShape,
+                        colors = textFieldColors
                     )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val name = walletName.trim()
-                        val amount = walletAmountStr.toDoubleOrNull() ?: 0.0
-                        if (name.isNotEmpty()) {
-                            isAdding = true
-                            onAddWallet(name, amount) {
-                                isAdding = false
-                                walletName = ""
-                                walletAmountStr = ""
-                                showDialog = false
+                    Spacer(Modifier.height(24.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .clickable { showDialog = false },
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFF5F5F5),
+                            border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "Cancel",
+                                    color = Color(0xFF616161),
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .clickable(enabled = !isAdding) {
+                                    val name = walletName.trim()
+                                    val amount = walletAmountStr.toDoubleOrNull() ?: 0.0
+                                    if (name.isNotEmpty()) {
+                                        isAdding = true
+                                        onAddWallet(name, amount) {
+                                            isAdding = false
+                                            walletName = ""
+                                            walletAmountStr = ""
+                                            showDialog = false
+                                        }
+                                    }
+                                },
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFF0345FC)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    if (isAdding) "Adding…" else "Add new wallet",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
+                                )
                             }
                         }
                     }
-                ) {
-                    Text(if (isAdding) "Adding…" else "Add new wallet", color = Color(0xFF0345FC))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Cancel", color = Color.Gray)
                 }
             }
-        )
+        }
     }
 
     LazyRow(
