@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LinkForge</string>
+    <!-- From Firebase Console: Project settings → Your apps → Web app → Web client ID -->
+    <string name="default_web_client_id" translatable="false">846434416490-ngcv2lc0lnj7f20oqmp5s8hfbe0a5aop.apps.googleusercontent.com</string>
+</resources>

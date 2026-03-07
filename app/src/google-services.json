@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "846434416490",
+    "project_id": "linkforge-203da",
+    "storage_bucket": "linkforge-203da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:846434416490:android:93d058f9f4c1f9294b5713",
+        "android_client_info": {
+          "package_name": "com.example.linkforge"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "846434416490-ngcv2lc0lnj7f20oqmp5s8hfbe0a5aop.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0GEDRf8N8PIibNrgumkg3ieRfSReaQio"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "846434416490-ngcv2lc0lnj7f20oqmp5s8hfbe0a5aop.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
