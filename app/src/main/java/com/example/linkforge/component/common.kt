@@ -47,3 +47,20 @@ fun PreviewHOME() {
         onClick = { /* Handle click */ }
     )
 }
+
+fun processQuestion(question: String): String {
+
+    return when {
+        question.contains("today transaction") ->
+            "Today you spent ₹220 and earned ₹1010."
+
+        question.contains("profit this month") ->
+            "Yes, you made a profit of ₹790 this month."
+
+        question.contains("saving") ->
+            "You saved ₹500 this month."
+
+        else ->
+            "I couldn't understand. Try asking about transactions or savings."
+    }
+}

@@ -12,15 +12,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Route
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -43,11 +51,17 @@ private data class SettingsItem(
 @Composable
 fun ProfileScreen() {
     val settingsItems = listOf(
+        SettingsItem("User Profile", Icons.Filled.Person),
+        SettingsItem("Categories Management", Icons.Filled.Category),
+        SettingsItem("My Wallets", Icons.Filled.AccountBalanceWallet),
+        SettingsItem("My Journeys", Icons.Filled.Route),
+        SettingsItem("My reminders", Icons.Filled.Notifications),
+        SettingsItem("See transactions", Icons.Filled.Receipt),
+        SettingsItem("Export data", Icons.Filled.Share),
+        SettingsItem("Clear All data", Icons.Filled.DeleteSweep),
+        SettingsItem("Delete Account", Icons.Filled.DeleteForever),
+        SettingsItem("Security", Icons.Filled.Security),
         SettingsItem("Account security", Icons.Filled.Lock),
-        SettingsItem("Autofill", Icons.Filled.CheckCircle),
-        SettingsItem("Vault", Icons.Filled.Storage),
-        SettingsItem("Appearance", Icons.Filled.Palette),
-        SettingsItem("Other", Icons.Filled.Apps),
         SettingsItem("About", Icons.Filled.Info)
     )
 
@@ -56,6 +70,7 @@ fun ProfileScreen() {
             .fillMaxSize()
             .statusBarsPadding()
             .background(Color(0xFFF5F5F5))
+            .verticalScroll(rememberScrollState())
     ) {
         // Header: Settings centered at top
         Text(

@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.rememberNavController
@@ -16,6 +20,7 @@ import com.example.linkforge.bottombar.NavigationGraph
 fun MainScreen(onLogout: () -> Unit = {}) {
     val navController = rememberNavController()
     val myGrey = Color(0xFFF5F5F5) // Your requested color
+    var clearHomeSubScreen by remember { mutableStateOf(0) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(), // Ensures the scaffold fills the whole screen
@@ -23,13 +28,20 @@ fun MainScreen(onLogout: () -> Unit = {}) {
         bottomBar = {
             // Apply navigationBarsPadding to keep it above the system pill
             Box(modifier = Modifier.navigationBarsPadding()) {
-                MyBottomBar(navController)
+                MyBottomBar(
+                    navController = navController,
+                    onHomeTabClick = { clearHomeSubScreen++ }
+                )
             }
         }
     ) { innerPadding ->
         // Use ONLY bottom padding here so content can flow behind status bar
         Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
-            NavigationGraph(navController, onLogout = onLogout)
+            NavigationGraph(
+                navController = navController,
+                onLogout = onLogout,
+                clearHomeSubScreen = clearHomeSubScreen
+            )
         }
     }
 }

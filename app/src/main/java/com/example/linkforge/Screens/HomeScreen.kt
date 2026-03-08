@@ -64,6 +64,11 @@ import com.example.linkforge.data.ExpenseAndIncome
 import com.example.linkforge.data.Transaction
 import com.example.linkforge.data.UserPreferences
 import com.example.linkforge.data.Wallet
+import com.example.linkforge.Screens.BudgetScreen
+import com.example.linkforge.Screens.JourneyDescScreen
+import com.example.linkforge.Screens.ReminderScreen
+import com.example.linkforge.Screens.SavingsScreen
+import com.example.linkforge.Screens.WalletDescScreen
 import com.example.linkforge.walletmanage.AddWalletCard
 import com.example.linkforge.walletmanage.WalletCard
 import com.google.firebase.Timestamp
@@ -81,7 +86,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 
 @Composable
-fun HomeScreen(onLogout: () -> Unit = {}) {
+fun HomeScreen(onLogout: () -> Unit = {}, clearHomeSubScreen: Int = 0) {
     val context = LocalContext.current
     val userPrefs = remember(context) { UserPreferences(context) }
     val user = remember(context) { userPrefs.getUser() }
@@ -163,6 +168,59 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
         fetchTransactions()
     }
 
+    var selectedWallet by remember { mutableStateOf<Wallet?>(null) }
+    var selectedJourneyType by remember { mutableStateOf<String?>(null) }
+    var selectedJourneyAmount by remember { mutableStateOf(0.0) }
+    var selectedServiceScreen by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(clearHomeSubScreen) {
+        if (clearHomeSubScreen > 0) {
+            selectedWallet = null
+            selectedJourneyType = null
+            selectedServiceScreen = null
+        }
+    }
+
+    if (selectedWallet != null) {
+        WalletDescScreen(
+            wallet = selectedWallet!!,
+            onBack = { selectedWallet = null },
+            uid = uid,
+            onWalletUpdated = { updated ->
+                walletList = walletList.map { if (it.name == updated.name && it.id == updated.id) updated else it }
+                userPrefs.saveWallets(walletList)
+                selectedWallet = updated
+            }
+        )
+        return
+    }
+
+    if (selectedJourneyType != null) {
+        JourneyDescScreen(
+            journeyType = selectedJourneyType!!,
+            totalAmount = selectedJourneyAmount,
+            onBack = { selectedJourneyType = null },
+            uid = uid
+        )
+        return
+    }
+
+    when (selectedServiceScreen) {
+        "savings" -> {
+            SavingsScreen(onBack = { selectedServiceScreen = null })
+            return
+        }
+        "reminder" -> {
+            ReminderScreen(onBack = { selectedServiceScreen = null })
+            return
+        }
+        "budget" -> {
+            BudgetScreen(onBack = { selectedServiceScreen = null })
+            return
+        }
+        else -> { }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -174,6 +232,7 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
         Text("Your Wallets", fontWeight = FontWeight.ExtraBold, color=Color.Blue, modifier = Modifier.padding(start=15.dp, top = 14.dp), fontSize = 16.sp)
         UserCardSection(
             walletList = walletList,
+            onWalletClick = { selectedWallet = it },
             onAddWallet = { name, balance, onSuccess ->
                 if (uid == null) {
                     onSuccess()
@@ -210,8 +269,18 @@ fun HomeScreen(onLogout: () -> Unit = {}) {
             }
         )
         Text("Your Journey", fontWeight = FontWeight.ExtraBold, color=Color.Blue, modifier = Modifier.padding(start=15.dp), fontSize = 16.sp)
-        JourneyLazyRow(expenseAndIncome = expenseAndIncome)
-        ServicesMoneyAddonSection()
+        JourneyLazyRow(
+            expenseAndIncome = expenseAndIncome,
+            onJourneyClick = { type, amount ->
+                selectedJourneyType = type
+                selectedJourneyAmount = amount
+            }
+        )
+        ServicesMoneyAddonSection(
+            onSavingsClick = { selectedServiceScreen = "savings" },
+            onRemindClick = { selectedServiceScreen = "reminder" },
+            onBudgetClick = { selectedServiceScreen = "budget" }
+        )
         var showAddTransactionDialog by remember { mutableStateOf(false) }
         if (showAddTransactionDialog) {
             AddTransactionDialog(
@@ -883,6 +952,7 @@ private val JourneyTextOnLight = Color(0xFF000000)
 private val JourneyTextOnDark = Color.Black
 
 private data class JourneyItem(
+    val type: String,
     val label: String,
     val amount: Double,
     val iconResId: Int,
@@ -891,9 +961,13 @@ private data class JourneyItem(
 )
 
 @Composable
-fun JourneyLazyRow(expenseAndIncome: ExpenseAndIncome) {
+fun JourneyLazyRow(
+    expenseAndIncome: ExpenseAndIncome,
+    onJourneyClick: (type: String, amount: Double) -> Unit = { _, _ -> }
+) {
     val items = listOf(
         JourneyItem(
+            "income",
             "Income",
             expenseAndIncome.income,
             R.drawable.income,
@@ -901,6 +975,7 @@ fun JourneyLazyRow(expenseAndIncome: ExpenseAndIncome) {
             JourneyTextOnLight
         ),
         JourneyItem(
+            "expense",
             "Expense",
             expenseAndIncome.expense,
             R.drawable.expenses,
@@ -908,6 +983,7 @@ fun JourneyLazyRow(expenseAndIncome: ExpenseAndIncome) {
             JourneyTextOnLight
         ),
         JourneyItem(
+            "lend",
             "Lend",
             expenseAndIncome.lend,
             R.drawable.lend,
@@ -915,6 +991,7 @@ fun JourneyLazyRow(expenseAndIncome: ExpenseAndIncome) {
             JourneyTextOnLight
         ),
         JourneyItem(
+            "borrow",
             "Borrow",
             expenseAndIncome.borrow,
             R.drawable.borrow,
@@ -929,9 +1006,11 @@ fun JourneyLazyRow(expenseAndIncome: ExpenseAndIncome) {
         contentPadding = PaddingValues(horizontal = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(items, key = { it.label }) { item ->
+        items(items, key = { it.type }) { item ->
             Surface(
-                modifier = Modifier.width(160.dp),
+                modifier = Modifier
+                    .width(160.dp)
+                    .clickable { onJourneyClick(item.type, item.amount) },
                 shape = JourneyPillShape,
                 color = item.backgroundColor,
                 shadowElevation = 1.dp,
@@ -973,7 +1052,11 @@ fun JourneyLazyRow(expenseAndIncome: ExpenseAndIncome) {
 private val ServicesPillShape = RoundedCornerShape(percent = 50)
 
 @Composable
-fun ServicesMoneyAddonSection() {
+fun ServicesMoneyAddonSection(
+    onSavingsClick: () -> Unit = {},
+    onRemindClick: () -> Unit = {},
+    onBudgetClick: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -982,12 +1065,11 @@ fun ServicesMoneyAddonSection() {
     ) {
         // Savings – blue pill, white icon & text
         Surface(
-
             modifier = Modifier
                 .weight(1f)
-                .clickable(onClick = { }),
+                .clickable(onClick = onSavingsClick),
             shape = ServicesPillShape,
-            color =  Color.White
+            color = Color.White
         ) {
             Row(
                 modifier = Modifier
@@ -1014,7 +1096,7 @@ fun ServicesMoneyAddonSection() {
         Surface(
             modifier = Modifier
                 .weight(1f)
-                .clickable(onClick = { }),
+                .clickable(onClick = onRemindClick),
             shape = ServicesPillShape,
             color = Color.White,
             shadowElevation = 1.dp,
@@ -1045,7 +1127,7 @@ fun ServicesMoneyAddonSection() {
         Surface(
             modifier = Modifier
                 .weight(1f)
-                .clickable(onClick = { }),
+                .clickable(onClick = onBudgetClick),
             shape = ServicesPillShape,
             color = Color.White,
             shadowElevation = 1.dp,
@@ -1080,6 +1162,7 @@ fun ServicesMoneyAddonSection() {
 @Composable
 fun UserCardSection(
     walletList: List<Wallet>,
+    onWalletClick: (Wallet) -> Unit = {},
     onAddWallet: (name: String, balance: Double, onSuccess: () -> Unit) -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
@@ -1227,7 +1310,7 @@ fun UserCardSection(
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         items(walletList) { wallet ->
-            WalletCard(wallet = wallet)
+            WalletCard(wallet = wallet, onClick = { onWalletClick(wallet) })
         }
         item {
             AddWalletCard(onClick = { showDialog = true })

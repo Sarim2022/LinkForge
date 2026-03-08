@@ -29,7 +29,7 @@ import com.example.linkforge.R
 import com.example.linkforge.data.Wallet
 
 @Composable
-fun WalletCard(wallet: Wallet) {
+fun WalletCard(wallet: Wallet, onClick: (() -> Unit)? = null) {
     // The blue color from your screenshot is approximately 0xFF2D5AF7
     val isPrimary = wallet.isDefault
     val backgroundColor = if (isPrimary) Color(0xFF2D5AF7) else Color.White
@@ -40,7 +40,10 @@ fun WalletCard(wallet: Wallet) {
         modifier = Modifier
             .width(150.dp)
             .height(170.dp)
-            .padding(8.dp),
+            .padding(8.dp)
+            .then(
+                if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
+            ),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
