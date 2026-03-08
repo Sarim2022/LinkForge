@@ -51,14 +51,26 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes
 import com.google.android.gms.common.api.ApiException
+import android.content.Context
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.util.UUID
 
 private val ButtonShape = RoundedCornerShape(40.dp)
+
+private val defaultExpenseCategories = listOf(
+    "Food", "Groceries", "Transport", "Rent", "Bills",
+    "Shopping", "Entertainment", "Health", "Travel", "Other"
+)
+
+private val defaultIncomeCategories = listOf(
+    "Salary", "Freelance", "Business", "Investment", "Gift",
+    "Bonus", "Cashback", "Interest", "Prize", "Other"
+)
 
 @Composable
 fun AuthScreen(onNavigateToHome: () -> Unit = {}) {
@@ -103,7 +115,7 @@ fun AuthScreen(onNavigateToHome: () -> Unit = {}) {
                             email = user.email.orEmpty()
                         )
                         UserPreferences(context).saveUser(profile)
-                        handleSignUpSuccess(user, onNavigateToHome) { msg ->
+                        handleSignUpSuccess(context, user, onNavigateToHome) { msg ->
                             Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                         }
                     } else {
@@ -229,16 +241,18 @@ fun AuthScreen(onNavigateToHome: () -> Unit = {}) {
 }
 
 private fun handleSignUpSuccess(
+    context: Context,
     firebaseUser: FirebaseUser,
     navigateToHome: () -> Unit,
     onError: (String) -> Unit = {}
 ) {
     val db = Firebase.firestore
     val userRef = db.collection("users").document(firebaseUser.uid)
+    val userPrefs = UserPreferences(context)
 
     userRef.get().addOnSuccessListener { document ->
         if (!document.exists()) {
-            val initialData = hashMapOf(
+            val initialData = hashMapOf<String, Any>(
                 "uid" to firebaseUser.uid,
                 "username" to (firebaseUser.displayName ?: "New User"),
                 "wallets" to listOf(
@@ -249,22 +263,44 @@ private fun handleSignUpSuccess(
                         "isDefault" to true
                     )
                 ),
-                "income" to 0.0,
-                "expenses" to 0.0,
+                "totalIncome" to 0.0,
+                "totalExpense" to 0.0,
                 "lend" to 0.0,
                 "borrow" to 0.0,
                 "savings" to 0.0,
                 "budget" to emptyList<Map<String, Any>>(),
-                "reminders" to emptyList<Map<String, Any>>()
+                "reminders" to emptyList<Map<String, Any>>(),
+                "expenseCategories" to defaultExpenseCategories,
+                "incomeCategories" to defaultIncomeCategories,
+                "isLoggedInPhone" to true,
+                "lastLoginAt" to FieldValue.serverTimestamp(),
+                "accountProvider" to "google",
+                "createdAt" to FieldValue.serverTimestamp(),
+                "startDate" to FieldValue.serverTimestamp(),
+                "notificationsEnabled" to false,
+                "transactionCount" to 0,
+                "provider" to "google"
             )
             userRef.set(initialData)
-                .addOnSuccessListener { navigateToHome() }
+                .addOnSuccessListener {
+                    userPrefs.saveExpenseCategories(defaultExpenseCategories)
+                    userPrefs.saveIncomeCategories(defaultIncomeCategories)
+                    navigateToHome()
+                }
                 .addOnFailureListener { e ->
                     Log.e("Firestore", "Error creating user document", e)
                     onError("Could not save profile. Check Firestore rules.")
                     navigateToHome()
                 }
         } else {
+            @Suppress("UNCHECKED_CAST")
+            val expenseCategories = (document.get("expenseCategories") as? List<*>)?.mapNotNull { it as? String }
+                ?: defaultExpenseCategories
+            @Suppress("UNCHECKED_CAST")
+            val incomeCategories = (document.get("incomeCategories") as? List<*>)?.mapNotNull { it as? String }
+                ?: defaultIncomeCategories
+            userPrefs.saveExpenseCategories(expenseCategories)
+            userPrefs.saveIncomeCategories(incomeCategories)
             navigateToHome()
         }
     }.addOnFailureListener { e ->

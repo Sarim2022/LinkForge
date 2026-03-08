@@ -13,7 +13,7 @@ import com.example.linkforge.bottombar.MyBottomBar
 import com.example.linkforge.bottombar.NavigationGraph
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onLogout: () -> Unit = {}) {
     val navController = rememberNavController()
     val myGrey = Color(0xFFF5F5F5) // Your requested color
 
@@ -29,7 +29,7 @@ fun MainScreen() {
     ) { innerPadding ->
         // Use ONLY bottom padding here so content can flow behind status bar
         Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
-            NavigationGraph(navController)
+            NavigationGraph(navController, onLogout = onLogout)
         }
     }
 }

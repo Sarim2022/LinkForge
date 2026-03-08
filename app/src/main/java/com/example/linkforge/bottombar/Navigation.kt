@@ -9,9 +9,9 @@ import com.example.linkforge.Screens.HomeScreen
 import com.example.linkforge.Screens.ProfileScreen
 
 @Composable
-fun NavigationGraph(navController: NavHostController) {
+fun NavigationGraph(navController: NavHostController, onLogout: () -> Unit = {}) {
     NavHost(navController, startDestination = Screen.Home.route) {
-        composable(Screen.Home.route) { HomeScreen() }
+        composable(Screen.Home.route) { HomeScreen(onLogout = onLogout) }
         composable(Screen.Chat.route) { ChatScreen() }
         composable(Screen.Analysis.route) { AnalysisScreen() }
         composable(Screen.Profile.route) { ProfileScreen() }

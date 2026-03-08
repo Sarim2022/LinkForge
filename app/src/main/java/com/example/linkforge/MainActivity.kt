@@ -20,6 +20,8 @@ import com.example.linkforge.Screens.SplashScreen
 import com.example.linkforge.MainScreen
 import com.example.linkforge.data.UserPreferences
 import com.example.linkforge.ui.theme.LinkForgeTheme
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 
 private const val SPLASH_ROUTE = "splash"
@@ -73,7 +75,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(HOME_ROUTE) {
-                            MainScreen()
+                            MainScreen(
+                                onLogout = {
+                                    Firebase.auth.signOut()
+                                    UserPreferences(context).clearUser()
+                                    navController.navigate(AUTH_ROUTE) {
+                                        popUpTo(HOME_ROUTE) { inclusive = true }
+                                    }
+                                }
+                            )
                         }
                     }
                 }
