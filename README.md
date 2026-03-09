@@ -21,6 +21,7 @@ remidner [ incomplete ] <br>
 budget<br>
 transactions <br>
 Splitwise [ incomplete ] <br>
+Monthly payment  <br>
 <br>
 future : <br>
 logout<br>
