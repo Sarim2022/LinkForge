@@ -1,13 +1,15 @@
 package com.example.linkforge.Screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -15,54 +17,44 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.DeleteSweep
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.filled.Route
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.linkforge.R
+import com.example.linkforge.data.UserPreferences
 
 private data class SettingsItem(
-    val label: String,
-    val icon: ImageVector
+    val label: String
 )
 
 @Composable
 fun ProfileScreen() {
+    val context = LocalContext.current
+    val user = UserPreferences(context).getUser()
+    val displayName = user?.displayName?.ifBlank { "User Name" } ?: "User Name"
+    val email = user?.email?.ifBlank { "email@example.com" } ?: "email@example.com"
+
     val settingsItems = listOf(
-        SettingsItem("User Profile", Icons.Filled.Person),
-        SettingsItem("Categories Management", Icons.Filled.Category),
-        SettingsItem("My Wallets", Icons.Filled.AccountBalanceWallet),
-        SettingsItem("My Journeys", Icons.Filled.Route),
-        SettingsItem("My reminders", Icons.Filled.Notifications),
-        SettingsItem("See transactions", Icons.Filled.Receipt),
-        SettingsItem("Export data", Icons.Filled.Share),
-        SettingsItem("Clear All data", Icons.Filled.DeleteSweep),
-        SettingsItem("Delete Account", Icons.Filled.DeleteForever),
-        SettingsItem("Security", Icons.Filled.Security),
-        SettingsItem("Account security", Icons.Filled.Lock),
-        SettingsItem("About", Icons.Filled.Info)
+        SettingsItem("User Profile"),
+        SettingsItem("Categories Management"),
+        SettingsItem("My Wallets"),
+        SettingsItem("My Journeys"),
+        SettingsItem("My reminders"),
+        SettingsItem("See transactions"),
+        SettingsItem("Export data"),
+        SettingsItem("Clear All data"),
+        SettingsItem("Delete Account"),
+        SettingsItem("Account security"),
+        SettingsItem("About")
     )
 
     Column(
@@ -71,25 +63,69 @@ fun ProfileScreen() {
             .statusBarsPadding()
             .background(Color(0xFFF5F5F5))
             .verticalScroll(rememberScrollState())
+            .padding(horizontal = 18.dp, vertical = 18.dp)
     ) {
-        // Header: Settings centered at top
         Text(
-            text = "Settings",
-            fontSize = 17.sp,
+            text = "Profile",
+            fontSize = 30.sp,
             color = Color.Black,
-
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp, bottom = 20.dp),
-            textAlign = TextAlign.Center
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(top = 4.dp, bottom = 15.dp)
         )
 
-        // Rounded card with list
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { }
+                    .padding(horizontal = 14.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.user),
+                    contentDescription = "User",
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = displayName,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF222222)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = email,
+                        fontSize = 13.sp,
+                        color = Color(0xFF7A7A7A)
+                    )
+                }
+                Image(
+                    painter = painterResource(R.drawable.rightarrow),
+                    contentDescription = "Open profile",
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        Text(
+            text = "Account Settings",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color(0xFF1D1D1D),
+            modifier = Modifier.padding(bottom = 10.dp)
+        )
+
         Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .fillMaxWidth(),
             shape = RoundedCornerShape(13.dp),
             color = Color.White,
             shadowElevation = 1.dp,
@@ -103,32 +139,21 @@ fun ProfileScreen() {
                             .clickable(onClick = { })
                             .padding(horizontal = 16.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                        Text(
+                            text = item.label,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black,
                             modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = null,
-                                modifier = Modifier.size(19.dp),
-                                tint = Color(0xFF555555)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = item.label,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Black
+                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Image(
+                                painter = painterResource(R.drawable.rightarrow),
+                                contentDescription = "Open setting",
+                                modifier = Modifier.size(14.dp)
                             )
                         }
-                        Icon(
-                            imageVector = Icons.Filled.KeyboardArrowRight,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = Color(0xFF9E9E9E)
-                        )
                     }
                     if (index < settingsItems.lastIndex) {
                         HorizontalDivider(

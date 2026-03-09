@@ -173,9 +173,9 @@ fun AuthScreen(onNavigateToHome: () -> Unit = {}) {
             fontSize = titleFontSize,
             fontWeight = FontWeight.ExtraBold,
             color = Color.White,
-            modifier = Modifier.clickable {
-                onNavigateToHome() // This triggers the redirect
-            }
+//            modifier = Modifier.clickable {
+//                onNavigateToHome() // This triggers the redirect
+//            }
         )
         Spacer(Modifier.height(16.dp))
 
@@ -268,7 +268,7 @@ private fun handleSignUpSuccess(
                 "lend" to 0.0,
                 "borrow" to 0.0,
                 "savings" to 0.0,
-                "budget" to emptyList<Map<String, Any>>(),
+                "budgets" to emptyMap<String, Any>(),
                 "reminders" to emptyList<Map<String, Any>>(),
                 "expenseCategories" to defaultExpenseCategories,
                 "incomeCategories" to defaultIncomeCategories,

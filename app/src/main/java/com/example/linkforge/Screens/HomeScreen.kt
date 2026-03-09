@@ -172,6 +172,7 @@ fun HomeScreen(onLogout: () -> Unit = {}, clearHomeSubScreen: Int = 0) {
     var selectedJourneyType by remember { mutableStateOf<String?>(null) }
     var selectedJourneyAmount by remember { mutableStateOf(0.0) }
     var selectedServiceScreen by remember { mutableStateOf<String?>(null) }
+    var selectedTransaction by remember { mutableStateOf<Transaction?>(null) }
 
     LaunchedEffect(clearHomeSubScreen) {
         if (clearHomeSubScreen > 0) {
@@ -201,6 +202,14 @@ fun HomeScreen(onLogout: () -> Unit = {}, clearHomeSubScreen: Int = 0) {
             totalAmount = selectedJourneyAmount,
             onBack = { selectedJourneyType = null },
             uid = uid
+        )
+        return
+    }
+
+    if (selectedTransaction != null) {
+        TransactionDetailScreen(
+            transaction = selectedTransaction!!,
+            onBack = { selectedTransaction = null }
         )
         return
     }
@@ -339,7 +348,10 @@ fun HomeScreen(onLogout: () -> Unit = {}, clearHomeSubScreen: Int = 0) {
                     items = transactionList,
                     key = { it.transactionId }
                 ) { transaction ->
-                    TransactionRow(transaction = transaction)
+                    TransactionRow(
+                        transaction = transaction,
+                        onClick = { selectedTransaction = transaction }
+                    )
                 }
             }
         }
@@ -352,7 +364,10 @@ private val ExpenseAmountColor = Color(0xFFC62828)
 private val TransactionRowBackground = Color(0xFFE3F2FD) // light blue
 
 @Composable
-private fun TransactionRow(transaction: Transaction) {
+private fun TransactionRow(
+    transaction: Transaction,
+    onClick: () -> Unit
+) {
     val (iconResId, amountColor, amountPrefix) = when (transaction.type) {
         "income" -> Triple(R.drawable.income, IncomeAmountColor, "+")
         "expense" -> Triple(R.drawable.expenses, ExpenseAmountColor, "-")
@@ -372,7 +387,9 @@ private fun TransactionRow(transaction: Transaction) {
     }
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         color = TransactionRowBackground
     ) {
@@ -423,6 +440,125 @@ private fun TransactionRow(transaction: Transaction) {
             color = amountColor
         )
         }
+    }
+}
+
+@Composable
+private fun TransactionDetailScreen(
+    transaction: Transaction,
+    onBack: () -> Unit
+) {
+    val amountPrefix = when (transaction.type) {
+        "income" -> "+"
+        "expense" -> "-"
+        else -> ""
+    }
+    val amountColor = when (transaction.type) {
+        "income" -> Color(0xFF2E7D32)
+        "expense" -> Color(0xFFC62828)
+        else -> Color.Black
+    }
+    val amountText = buildString {
+        append(amountPrefix)
+        append("₹")
+        val a = transaction.amount
+        append(if (a == a.toLong().toDouble()) a.toLong() else a)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .background(Color(0xFFF6F8FF))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(R.drawable.left),
+                contentDescription = "Back",
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onBack() }
+            )
+            Text(
+                text = "Transaction Details",
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 24.dp),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 20.sp,
+                color = Color(0xFF1B1F3B)
+            )
+        }
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(18.dp),
+            color = Color.White,
+            shadowElevation = 2.dp
+        ) {
+            Column(modifier = Modifier.padding(18.dp)) {
+                Text(
+                    text = transaction.title.ifEmpty { "Transaction" },
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xFF1B1F3B)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = amountText,
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = amountColor
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+
+                TransactionDetailRow(label = "Type", value = transaction.type.ifEmpty { "—" })
+                TransactionDetailRow(label = "Category", value = transaction.category.ifEmpty { "—" })
+                TransactionDetailRow(label = "Person Name", value = transaction.personName.ifEmpty { "—" })
+                TransactionDetailRow(label = "Wallet", value = transaction.walletName.ifEmpty { "—" })
+                TransactionDetailRow(label = "Date", value = transaction.date.ifEmpty { "—" })
+                TransactionDetailRow(label = "Old Wallet Amount", value = "₹${transaction.oldWalletMoney}")
+                TransactionDetailRow(label = "New Wallet Amount", value = "₹${transaction.newWalletMoney}")
+                TransactionDetailRow(label = "Note", value = transaction.note.ifEmpty { "—" })
+                TransactionDetailRow(
+                    label = "Transaction ID",
+                    value = transaction.transactionId.ifEmpty { "—" }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransactionDetailRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = label,
+            fontWeight = FontWeight.SemiBold,
+            color = Color(0xFF5C6078),
+            fontSize = 14.sp
+        )
+        Text(
+            text = value,
+            color = Color(0xFF1B1F3B),
+            fontSize = 14.sp,
+            textAlign = TextAlign.End,
+            modifier = Modifier.padding(start = 14.dp)
+        )
     }
 }
 
@@ -1325,6 +1461,9 @@ fun UserCardSection(
 @Composable
 fun HeaderCompoable(displayName: String = "User", onLogout: () -> Unit = {}) {
     var showLogoutDialog by remember { mutableStateOf(false) }
+    val currentMonthLabel = remember {
+        SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date())
+    }
 
     if (showLogoutDialog) {
         LogoutDialog(
@@ -1350,6 +1489,12 @@ fun HeaderCompoable(displayName: String = "User", onLogout: () -> Unit = {}) {
                 fontSize = 18.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.Black
+            )
+            Text(
+                text = currentMonthLabel,
+                fontSize = 13.sp,
+                color = Color.Gray,
+                fontWeight = FontWeight.Medium
             )
         }
         Box(
